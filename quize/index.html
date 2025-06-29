@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>📚 विषय चयन</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6fb;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #3949ab;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+      text-align: center;
+    }
+    .container {
+      max-width: 500px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #3949ab;
+      font-size: 22px;
+    }
+    select, input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .btn {
+      background: #3949ab;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    h3 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .settings-link {
+      text-align: center;
+      margin-top: 10px;
+    }
+    .settings-link a {
+      background: #3949ab;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <header>📚 Quiz App</header>
+
+  <div class="settings-link">
+    <a href="settings.html">⚙️ सेटिंग्स</a>
+  </div>
+
+  <div class="container">
+    <h1>📚 विषय और उपविषय चयन</h1>
+    <div class="section">
+      <label><strong>मुख्य विषय:</strong></label>
+      <select id="mainSubject" onchange="populateSubSubjects()">
+        <option value="">-- विषय चुनें --</option>
+      </select>
+      <label><strong>उपविषय:</strong></label>
+      <select id="subSubject">
+        <option value="">-- उपविषय चुनें --</option>
+      </select>
+      <button class="btn" onclick="proceedToAction()">👉 आगे बढ़ें</button>
+    </div>
+  </div>
+
+<script>
+let subjects = {};
+
+// जो subjects.json है, उसे load करने का function
+async function loadSubjectsFromJSON() {
+  try {
+    const response = await fetch("subjects.json");
+    subjects = await response.json();
+
+    // ट्रांसफॉर्म के लिए की जो keys object में हैं, उन्हीं handle करें
+    if (!Array.isArray(subjects)) {
+      // e.g. { economics: ["Micro", "Macro"] } की योजना
+      subjects = Object.fromEntries(Object.entries(subjects));
+    }
+
+    populateDropdowns();
+  } catch (e) {
+    console.error("subjects.json load failed:", e);
+  }
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function populateDropdowns() {
+  const main = document.getElementById("mainSubject");
+  main.innerHTML = '<option value="">-- विषय चुनें --</option>';
+
+  for (let key in subjects) {
+    const opt = new Option(capitalize(key), key);
+    main.appendChild(opt);
+  }
+}
+
+function populateSubSubjects() {
+  const subject = document.getElementById("mainSubject").value;
+  const subs = subjects[subject] || [];
+  const subSelect = document.getElementById("subSubject");
+  subSelect.innerHTML = '<option value="">-- उपविषय चुनें --</option>';
+  subs.forEach(sub => {
+    subSelect.appendChild(new Option(sub, sub));
+  });
+}
+
+function proceedToAction() {
+  const main = document.getElementById("mainSubject").value;
+  const sub = document.getElementById("subSubject").value;
+  if (!main || !sub) {
+    alert("⚠️ कृपया विषय और उपविषय चुनें!");
+    return;
+  }
+  localStorage.setItem("selectedMain", main);
+  localStorage.setItem("selectedSub", sub);
+  window.location.href = "action.html";
+}
+
+// Page load par सभी subjects.json को fetch karo
+window.onload = loadSubjectsFromJSON;
+</script>
+</body>
+</html>
