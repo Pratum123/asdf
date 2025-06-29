@@ -73,7 +73,6 @@
 <body>
   <header>📚 Quiz App</header>
 
-  <!-- ✅ Settings Button -->
   <div class="settings-link">
     <a href="settings.html">⚙️ सेटिंग्स</a>
   </div>
@@ -122,6 +121,26 @@
   </div>
 
 <script>
+async function fetchQuizDataFromLocalJSON() {
+  try {
+    const res = await fetch("quiz_backup.json");
+    if (!res.ok) throw new Error("File not found or CORS issue");
+    const data = await res.json();
+
+    if (data.subjects) localStorage.setItem("quiz_subjects", JSON.stringify(data.subjects));
+    if (data.main) localStorage.setItem("selectedMain", data.main);
+    if (data.sub) localStorage.setItem("selectedSub", data.sub);
+    if (data.quizData) {
+      for (let key in data.quizData) {
+        localStorage.setItem(key, JSON.stringify(data.quizData[key]));
+      }
+    }
+    console.log("✅ quiz_backup.json से डेटा लोड हो गया!");
+  } catch (e) {
+    console.error("❌ JSON फाइल से डेटा लोड नहीं हुआ:", e);
+  }
+}
+
 async function autoImportFromGist() {
   const gistId = localStorage.getItem("gist_id");
   if (!gistId) return;
@@ -144,6 +163,7 @@ async function autoImportFromGist() {
 }
 
 window.onload = async () => {
+  await fetchQuizDataFromLocalJSON();
   await autoImportFromGist();
   populateDropdowns();
 };
