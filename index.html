@@ -47,35 +47,10 @@
       border: none;
       cursor: pointer;
     }
-    .section {
-      margin-bottom: 30px;
-    }
-    h3 {
-      font-size: 18px;
-      color: #333;
-      margin-bottom: 10px;
-    }
-    .settings-link {
-      text-align: center;
-      margin-top: 10px;
-    }
-    .settings-link a {
-      background: #3949ab;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      display: inline-block;
-    }
   </style>
 </head>
 <body>
   <header>📚 Quiz App</header>
-
-  <div class="settings-link">
-    <a href="settings.html">⚙️ सेटिंग्स</a>
-  </div>
 
   <div class="container">
     <h1>📚 विषय और उपविषय चयन</h1>
@@ -99,7 +74,7 @@ let selectedSub = "";
 
 async function loadFromRawJSON() {
   try {
-    const res = await fetch("https://raw.githubusercontent.com/Pratum123/asdf/main/quiz_backup.json");
+    const res = await fetch("https://pratum123.github.io/asdf/quiz_backup.json"); // ✅ safer for Incognito
     if (!res.ok) throw new Error("❌ नेटवर्क समस्या");
     const data = await res.json();
 
