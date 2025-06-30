@@ -32,11 +32,12 @@
         return;
       }
 
-      const key = `${main}___${sub}`;
+      const key = `quiz_${main}_${sub}`;
       try {
         const res = await fetch(JSON_URL);
         const data = await res.json();
-        questions = data.questions?.[key] || [];
+        questions = data.quizData?.[key] || [];
+
         if (questions.length === 0) {
           alert("❗ कोई प्रश्न नहीं मिला!");
           document.getElementById("quizContainer").textContent = "अभी कोई प्रश्न उपलब्ध नहीं है।";
@@ -53,9 +54,7 @@
     function showQuestion() {
       const quizDiv = document.getElementById("quizContainer");
       const q = questions[current];
-      quizDiv.innerHTML = `
-        <div class="question">Q${current + 1}/${questions.length}: ${q.question}</div>
-      `;
+      quizDiv.innerHTML = `<div class="question">Q${current + 1}/${questions.length}: ${q.question}</div>`;
       Object.entries(q.options).forEach(([opt, text]) => {
         const btn = document.createElement("button");
         btn.className = "option-btn";
@@ -70,22 +69,16 @@
       const q = questions[current];
       document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
 
-      if (choice !== q.correct) {
-        quizDiv.querySelectorAll(".option-btn").forEach(btn => {
-          if (btn.textContent.startsWith(q.correct + ":")) {
-            btn.style.background = "#4CAF50"; btn.style.color = "#fff";
-          }
-          if (btn.textContent.startsWith(choice + ":") && choice !== q.correct) {
-            btn.style.background = "#F44336"; btn.style.color = "#fff";
-          }
-        });
-      } else {
-        quizDiv.querySelectorAll(".option-btn").forEach(btn => {
-          if (btn.textContent.startsWith(q.correct + ":")) {
-            btn.style.background = "#4CAF50"; btn.style.color = "#fff";
-          }
-        });
-      }
+      document.querySelectorAll(".option-btn").forEach(btn => {
+        if (btn.textContent.startsWith(q.correct + ":")) {
+          btn.style.background = "#4CAF50";
+          btn.style.color = "#fff";
+        }
+        if (btn.textContent.startsWith(choice + ":") && choice !== q.correct) {
+          btn.style.background = "#F44336";
+          btn.style.color = "#fff";
+        }
+      });
 
       const expl = document.createElement("div");
       expl.className = "explanation";
