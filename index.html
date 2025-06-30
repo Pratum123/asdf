@@ -121,12 +121,14 @@
   </div>
 
 <script>
-async function fetchQuizDataFromLocalJSON() {
-  try {
-    const res = await fetch("quiz_backup.json");
-    if (!res.ok) throw new Error("File not found or CORS issue");
-    const data = await res.json();
+async function importFromRawURL() {
+  const existingSubjects = localStorage.getItem("quiz_subjects");
+  if (existingSubjects) return;
 
+  try {
+    const res = await fetch("https://raw.githubusercontent.com/Pratum123/asdf/main/quiz_backup.json");
+    if (!res.ok) throw new Error("Network Error");
+    const data = await res.json();
     if (data.subjects) localStorage.setItem("quiz_subjects", JSON.stringify(data.subjects));
     if (data.main) localStorage.setItem("selectedMain", data.main);
     if (data.sub) localStorage.setItem("selectedSub", data.sub);
@@ -135,9 +137,9 @@ async function fetchQuizDataFromLocalJSON() {
         localStorage.setItem(key, JSON.stringify(data.quizData[key]));
       }
     }
-    console.log("✅ quiz_backup.json से डेटा लोड हो गया!");
+    console.log("✅ Raw JSON से डेटा लोड हो गया");
   } catch (e) {
-    console.error("❌ JSON फाइल से डेटा लोड नहीं हुआ:", e);
+    console.error("❌ Raw JSON लोड करने में त्रुटि:", e);
   }
 }
 
@@ -163,9 +165,9 @@ async function autoImportFromGist() {
 }
 
 window.onload = async () => {
-  await fetchQuizDataFromLocalJSON();
-  await autoImportFromGist();
-  populateDropdowns();
+  await importFromRawURL();    // ✅ नया जोड़ा गया
+  await autoImportFromGist();  // पहले से मौजूद
+  populateDropdowns();         // विषय दिखाने के लिए
 };
 
 let subjects = JSON.parse(localStorage.getItem("quiz_subjects") || "{}");
