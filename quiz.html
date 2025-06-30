@@ -5,261 +5,109 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>📚 प्रश्नोत्तरी ऐप</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f7fa;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: linear-gradient(135deg, #3949ab, #283593);
-      color: white;
-      padding: 20px;
-      font-size: 24px;
-      text-align: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .section {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      max-width: 750px;
-      margin: 30px auto;
-    }
-    textarea, input, select {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-    .btn {
-      background: linear-gradient(135deg, #3949ab, #5c6bc0);
-      color: white;
-      font-weight: bold;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .btn-option {
-      display: block;
-      width: 100%;
-      text-align: left;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background: #f0f0f0;
-    }
-    .explanation {
-      margin-top: 15px;
-      padding: 10px;
-      background: #f9f9f9;
-      border-left: 4px solid #3949ab;
-    }
-    .edit-btn {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: #ffc107;
-      border: none;
-      padding: 2px;
-      border-radius: 4px;
-      font-size: 12px;
-      cursor: pointer;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; margin: 0; padding: 0; }
+    header { background: #3949ab; color: #fff; padding: 20px; font-size: 24px; text-align: center; }
+    .section { background: #fff; padding: 20px; border-radius: 8px; margin: 20px auto; max-width: 600px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .question { font-weight: bold; margin-bottom: 10px; }
+    .option-btn { display: block; width: 100%; text-align: left; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9; cursor: pointer; }
+    .option-btn:hover { background: #ececec; }
+    .explanation { margin-top: 15px; padding: 10px; background: #eef; border-left: 4px solid #3949ab; }
+    .nav-btn { margin-top: 15px; padding: 10px 15px; background: #3949ab; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
   </style>
 </head>
 <body>
-<header>📚 प्रश्नोत्तरी ऐप</header>
-<h2 id="pageTitle" style="text-align:center; color:#3949ab;"></h2>
+  <header>📚 प्रश्नोत्तरी ऐप</header>
+  <div id="quizContainer" class="section">लोड हो रहा है...</div>
 
-<!-- 🔹 Section: Add Question -->
-<div id="inputSection" class="section" style="display:none;">
-  <h3>➕ नया प्रश्न जोड़ें</h3>
-  <textarea id="question" placeholder="प्रश्न लिखें"></textarea>
-  <input id="optA" placeholder="विकल्प A">
-  <input id="optB" placeholder="विकल्प B">
-  <input id="optC" placeholder="विकल्प C">
-  <input id="optD" placeholder="विकल्प D">
-  <select id="correct">
-    <option value="A">A</option>
-    <option value="B">B</option>
-    <option value="C">C</option>
-    <option value="D">D</option>
-  </select>
-  <textarea id="explanation" placeholder="व्याख्या लिखें"></textarea>
-  <button class="btn" onclick="saveQuestion()">💾 सेव करें</button>
-  <div id="questionCount"></div>
-  <div id="questionList"></div>
-</div>
+  <script>
+    const JSON_URL = "https://raw.githubusercontent.com/Pratum123/asdf/main/quiz_backup.json";
+    let questions = [], current = 0;
 
-<!-- 🔹 Section: Practice Quiz -->
-<div id="practiceSection" class="section" style="display:none;">
-  <h3>🎯 अभ्यास</h3>
-  <div id="progress"></div>
-  <div id="quizQuestionContainer"></div>
-  <div id="quizOptions"></div>
-</div>
-
-<script>
-let questions = [];
-let currentQuestion = 0;
-let correctCount = 0;
-let incorrectCount = 0;
-let editIndex = -1;
-
-// ✅ Step 1: GitHub JSON लोड करें
-async function updateQuizData() {
-  const main = localStorage.getItem("selectedMain");
-  const sub = localStorage.getItem("selectedSub");
-  const mode = localStorage.getItem("quizMode") || "practice";
-  const key = `${main}___${sub}`; // JSON में यही key होनी चाहिए
-
-  try {
-    const res = await fetch("https://raw.githubusercontent.com/Pratum123/asdf/main/quiz_backup.json");
-    const data = await res.json();
-    const allQuestions = data.questions || {};
-
-    questions = allQuestions[key] || [];
-    currentQuestion = 0;
-    correctCount = 0;
-    incorrectCount = 0;
-    editIndex = -1;
-
-    document.getElementById("pageTitle").textContent = mode === "input" ? "➕ प्रश्न जोड़ें" : "🎯 अभ्यास";
-
-    if (mode === "input") {
-      document.getElementById("inputSection").style.display = "block";
-      document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
-      showAllQuestions();
-    } else {
-      if (questions.length === 0) {
-        alert("❗ कोई प्रश्न नहीं मिला!");
+    async function initQuiz() {
+      const main = localStorage.getItem("selectedMain");
+      const sub = localStorage.getItem("selectedSub");
+      if (!main || !sub) {
+        alert("⚠️ कृपया पहले विषय और उपविषय चुनें!");
         window.location.href = "index.html";
-      } else {
-        document.getElementById("practiceSection").style.display = "block";
+        return;
+      }
+
+      const key = `${main}___${sub}`;
+      try {
+        const res = await fetch(JSON_URL);
+        const data = await res.json();
+        questions = data.questions?.[key] || [];
+        if (questions.length === 0) {
+          alert("❗ कोई प्रश्न नहीं मिला!");
+          document.getElementById("quizContainer").textContent = "अभी कोई प्रश्न उपलब्ध नहीं है।";
+          return;
+        }
         showQuestion();
+      } catch (err) {
+        alert("❌ डेटा लोड करने में त्रुटि!");
+        console.error(err);
+        document.getElementById("quizContainer").textContent = "लोडिंग में समस्या।";
       }
     }
-  } catch (e) {
-    alert("❌ GitHub JSON लोड नहीं हो सका!");
-    console.error(e);
-  }
-}
 
-// ✅ Step 2: Practice मोड में प्रश्न दिखाएं
-function showQuestion() {
-  const q = questions[currentQuestion];
-  document.getElementById("quizQuestionContainer").innerHTML = `
-    <div><strong>प्रश्न ${currentQuestion + 1}/${questions.length}:</strong><br>${q.question}</div>
-  `;
-  const optionsDiv = document.getElementById("quizOptions");
-  optionsDiv.innerHTML = "";
-
-  for (let key in q.options) {
-    const btn = document.createElement("button");
-    btn.className = "btn-option";
-    btn.textContent = `${key}: ${q.options[key]}`;
-    btn.onclick = () => handleAnswer(key);
-    optionsDiv.appendChild(btn);
-  }
-
-  document.getElementById("progress").textContent = `📘 ${currentQuestion + 1} / ${questions.length}`;
-}
-
-// ✅ Step 3: उत्तर जांचें और व्याख्या दिखाएं
-function handleAnswer(selected) {
-  const q = questions[currentQuestion];
-  document.querySelectorAll(".btn-option").forEach(btn => btn.disabled = true);
-
-  if (selected === q.correct) {
-    correctCount++;
-  } else {
-    incorrectCount++;
-  }
-
-  const expl = document.createElement("div");
-  expl.className = "explanation";
-  expl.innerHTML = `<strong>📘 व्याख्या:</strong><br>${q.explanation || "कोई व्याख्या नहीं"}`;
-  document.getElementById("quizOptions").appendChild(expl);
-
-  const nextBtn = document.createElement("button");
-  nextBtn.className = "btn";
-  nextBtn.textContent = currentQuestion < questions.length - 1 ? "➡️ अगला" : "✅ समाप्त";
-  nextBtn.onclick = () => {
-    currentQuestion++;
-    if (currentQuestion >= questions.length) {
-      alert(`✅ आपने ${correctCount} सही और ${incorrectCount} गलत उत्तर दिए।`);
-      window.location.href = "index.html";
-    } else {
-      showQuestion();
+    function showQuestion() {
+      const quizDiv = document.getElementById("quizContainer");
+      const q = questions[current];
+      quizDiv.innerHTML = `
+        <div class="question">Q${current + 1}/${questions.length}: ${q.question}</div>
+      `;
+      Object.entries(q.options).forEach(([opt, text]) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = `${opt}: ${text}`;
+        btn.onclick = () => selectAnswer(opt);
+        quizDiv.appendChild(btn);
+      });
     }
-  };
-  document.getElementById("quizOptions").appendChild(nextBtn);
-}
 
-// ✅ Step 4: प्रश्न जोड़ने का फ़ंक्शन (local-only)
-function saveQuestion() {
-  const q = document.getElementById("question").value.trim();
-  const A = document.getElementById("optA").value.trim();
-  const B = document.getElementById("optB").value.trim();
-  const C = document.getElementById("optC").value.trim();
-  const D = document.getElementById("optD").value.trim();
-  const correct = document.getElementById("correct").value;
-  const exp = document.getElementById("explanation").value.trim();
+    function selectAnswer(choice) {
+      const quizDiv = document.getElementById("quizContainer");
+      const q = questions[current];
+      document.querySelectorAll(".option-btn").forEach(btn => btn.disabled = true);
 
-  if (!q || !A || !B || !C || !D) {
-    alert("❗ कृपया सभी फ़ील्ड भरें");
-    return;
-  }
+      if (choice !== q.correct) {
+        quizDiv.querySelectorAll(".option-btn").forEach(btn => {
+          if (btn.textContent.startsWith(q.correct + ":")) {
+            btn.style.background = "#4CAF50"; btn.style.color = "#fff";
+          }
+          if (btn.textContent.startsWith(choice + ":") && choice !== q.correct) {
+            btn.style.background = "#F44336"; btn.style.color = "#fff";
+          }
+        });
+      } else {
+        quizDiv.querySelectorAll(".option-btn").forEach(btn => {
+          if (btn.textContent.startsWith(q.correct + ":")) {
+            btn.style.background = "#4CAF50"; btn.style.color = "#fff";
+          }
+        });
+      }
 
-  const newQ = {
-    question: q,
-    options: { A, B, C, D },
-    correct,
-    explanation: exp
-  };
+      const expl = document.createElement("div");
+      expl.className = "explanation";
+      expl.innerHTML = `<strong>📘 व्याख्या:</strong><br>${q.explanation || "कोई व्याख्या उपलब्ध नहीं है।"}`;
+      quizDiv.appendChild(expl);
 
-  if (editIndex >= 0) {
-    questions[editIndex] = newQ;
-    editIndex = -1;
-  } else {
-    questions.push(newQ);
-  }
+      const nav = document.createElement("button");
+      nav.className = "nav-btn";
+      nav.textContent = (current + 1 < questions.length) ? "➡️ अगला प्रश्न" : "✅ समाप्त करें";
+      nav.onclick = () => {
+        if (current + 1 < questions.length) {
+          current++;
+          showQuestion();
+        } else {
+          alert("✅ Quiz समाप्त!");
+          window.location.href = "index.html";
+        }
+      };
+      quizDiv.appendChild(nav);
+    }
 
-  alert("✅ प्रश्न सेव हुआ (सिर्फ localStorage में)");
-  document.getElementById("question").value = "";
-  document.getElementById("optA").value = "";
-  document.getElementById("optB").value = "";
-  document.getElementById("optC").value = "";
-  document.getElementById("optD").value = "";
-  document.getElementById("explanation").value = "";
-
-  document.getElementById("questionCount").textContent = `🔢 कुल प्रश्न: ${questions.length}`;
-  showAllQuestions();
-}
-
-// ✅ Step 5: सभी प्रश्न दिखाएं (input मोड में)
-function showAllQuestions() {
-  const list = document.getElementById("questionList");
-  list.innerHTML = "";
-  questions.forEach((q, i) => {
-    const div = document.createElement("div");
-    div.className = "question-item";
-    div.innerHTML = `<strong>Q${i + 1}</strong>: ${q.question}`;
-    list.appendChild(div);
-  });
-}
-
-// ✅ Step 6: पेज लोड पर GitHub JSON से डेटा लाएं
-window.onload = updateQuizData;
-</script>
+    window.onload = initQuiz;
+  </script>
 </body>
 </html>
